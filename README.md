@@ -363,6 +363,7 @@ Everything here was written during the hackathon, starting from an empty reposit
 | SeaweedFS | Apache-2.0 | Local media store in the judge stack |
 | Remotion | Remotion License (free for individuals) | Shorts renderer and the demo video |
 | Pexels sample footage (recipe guide in the demo) | Pexels License | Shown with an on-screen credit; no endorsement implied |
+| Music: *Corporate Background Inspiring First* by Top-Flow ([Pixabay](https://pixabay.com/music/upbeat-corporate-background-inspiring-first-404814/)) | Pixabay Content License | Background music in the demo video |
 | LibriVox recordings: Lu Xun, *The True Story of Ah Q* (Mandarin); Ogawa Mimei, *Akai Rosoku to Ningyo* (Japanese) | Public domain | iListen sample recordings and tests |
 
 Open-source crates and npm packages are listed in `api/Cargo.lock`, `web/package-lock.json`,
