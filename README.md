@@ -388,6 +388,19 @@ Everything here was written during the hackathon, starting from an empty reposit
 </details>
 
 <details>
+<summary><h2>For future implementation</h2></summary>
+
+**nimbytes is a filesystem, and it shines brightest with Meta AI glasses.** Paired through a
+connector, a toolkit or MCP, the glasses would hand each clip straight to your library: a lighter,
+quicker hand-off with no phone in the middle. You film it, nimbytes keeps it, and the family can
+find it again.
+
+We applied for that access during the event, but the approval didn't come through in time. It is
+the first thing we will plug in when it does.
+
+</details>
+
+<details>
 <summary><h2>Privacy</h2></summary>
 
 - Media sits in a private, encrypted bucket and is reached only through short-lived signed links
