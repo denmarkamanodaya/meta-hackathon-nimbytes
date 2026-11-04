@@ -1,5 +1,7 @@
 # nimbytes
 
+![nimbytes: an AI-powered filesystem, built with Meta AI models](docs/readme/banner.png)
+
 [![ci](https://github.com/denmarkamanodaya/meta-hackathon-nimbytes/actions/workflows/ci.yml/badge.svg)](https://github.com/denmarkamanodaya/meta-hackathon-nimbytes/actions/workflows/ci.yml)
 [![RepoGrade](https://www.repo-grade.com/api/badge/denmarkamanodaya/meta-hackathon-nimbytes)](https://www.repo-grade.com/report/denmarkamanodaya/meta-hackathon-nimbytes)
 
@@ -258,8 +260,19 @@ cp .env.example .env    # fill in the 3 REQUIRED values (see below)
 make judge              # downloads the search model once, builds the web app in Docker, starts it all
 ```
 
+The first run takes about **5 to 10 minutes** (cold start): it downloads the search model and
+builds the api and web images. Later runs reuse both and start much faster.
+
 Then open **http://localhost:8080** (Chrome, Edge or Firefox) and sign in with your `DEMO_PASSCODE`.
+The passcode is whatever you put in `.env`, typed exactly; there is no username.
 `make judge-down` stops it; your library stays in Docker volumes and `./data`.
+
+![The nimbytes sign-in page at localhost:8080, asking for the demo passcode](docs/readme/login.png)
+
+A fresh clone running locally: one photo uploaded, then found by searching "glassed-wall"
+(refined by Muse Spark) with its description and things filled in by Meta models.
+
+![A fresh local run: a search finds the uploaded photo and shows what Meta models saw in it](docs/readme/local-run.png)
 
 | `.env` value | What to put |
 | --- | --- |
