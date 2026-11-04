@@ -16,7 +16,7 @@ eyesight or memory is fading.
 **▶ Demo video (2:16):** [youtu.be/U1ZFNs1BktY](https://youtu.be/U1ZFNs1BktY): Eric's story, told with real
 screen recordings: the zero-bytes filesystem, iRecall search, Memory Lane, iRead, iListen and iGuide.
 
-**Run it yourself in three commands:** see [Run it](#run-it). You need Docker and your own Meta AI
+**Run it yourself in three commands:** see [Setup Instructions](#setup-instructions). You need Docker and your own Meta AI
 API key. No cloud account, no bucket, nothing that only works on the author's machine.
 
 **Try it live (optional):** https://3-104-132-162.sslip.io. The passcode is in the submission form.
@@ -149,112 +149,9 @@ Calls are made with storage off, so footage is never kept or used for training.
 
 </details>
 
-<details>
-<summary><h2>Architecture</h2></summary>
-
-```
- iPhone / browser (PWA)        nimbytes for Mac (Tauri 2)
-        │                            │  ~/nimbytes  (local NFS drive, smart cache)
-        └──────────── HTTPS ─────────┤
-                                      ▼
-                  Caddy ──► API (Rust · Axum · Tokio)
-                              │  SQLite (WAL) + sqlite-vec · Tantivy
-                              │  job workers: ingest → moments → describe → transcribe
-                              │               → faces → vectors → near-copies → guides
-                              ├──► Meta Model API (Muse Spark, SAM 3.1, Voice Transcribe, Muse Image)
-                              ├──► Perception Encoder + MMS-TTS (ONNX, on the box)
-                              ├──► Renderer (Node · Remotion) for shorts, covers, stills
-                              └──► Object storage: Cloudflare R2, Amazon S3, or a local
-                                   S3-compatible store (presigned multipart + range reads)
-```
-
-### One codebase, two ways to run
-
-| Piece | Live server ("Try it live") | Your machine (`make judge`) |
-| --- | --- | --- |
-| Computer | One AWS EC2 box (Sydney) | Your computer, in Docker |
-| Video storage | Cloudflare R2 | SeaweedFS (S3-compatible, local, free) |
-| Meta key | The author's | Yours |
-| Address | HTTPS on the server's domain | http://localhost:8080 |
-| Code | Same | Same |
-
-One setting (`STORAGE_PROVIDER`: `r2`, `s3` or `local`) picks the store; `docker-compose.judge.yml`
-sets it to `local` and starts these containers on your machine:
-
-```
-┌──────────────────────── your machine (Docker) ────────────────────────┐
-│  Caddy (web server) ── the app at http://localhost:8080               │
-│     ├──► API (Rust) ── jobs, search, Memory Lane, Perception Encoder   │
-│     ├──► SeaweedFS ── your videos, letters and recordings             │
-│     └──► Renderer (Remotion) ── shorts and covers                      │
-└───────────────────────────────┬────────────────────────────────────────┘
-                                ▼  the only outside call
-                       Meta Model API (your key)
-```
-
-Media links are signed for `localhost:8080`, and Caddy passes the bucket path through to SeaweedFS,
-so the browser and the renderer reach media on the app's own origin. Meta calls carry media as data
-URLs, so nothing has to be reachable from the internet.
-
-- **Hexagonal core:** domain types, ports and use cases in `api/crates/core` depend on nothing that
-  does IO. Adapters (`api/crates/adapters`) are the only code that calls HTTP, R2, ffmpeg, SQLite,
-  Tantivy or ONNX. One composition root wires them (`api/crates/server`).
-- **Typed errors:** one `AppError { code, message }` with `UPPER_SNAKE` codes.
-- **Prompts live in files:** `api/prompts/*.md`, each with a JSON schema that every Muse Spark
-  answer is validated against.
-
-</details>
-
-<details>
-<summary><h2>Technology</h2></summary>
-
-| Layer | Technology |
-| --- | --- |
-| Web app | Installable PWA: React 19.3, Vite 8.3, TypeScript 6.0, React Router 8.5, vanilla CSS design tokens (no CSS framework), Vitest 5 |
-| Mac app | Tauri 2.12 (Rust + the same web app), local NFS drive (`nfsserve`), macOS Keychain session, tray, autostart, notifications; signed with a Developer ID |
-| API | Rust: Axum 0.8, Tokio 1.54, sqlx 0.9 on SQLite (WAL), sqlite-vec 0.1, Tantivy 0.27, `ort` 2.0 (ONNX Runtime), reqwest 0.13, aws-sdk-s3 (R2), ffmpeg/ffprobe, poppler (PDF pages) |
-| Rendering | Node + Remotion 4.0: one composition shared by the in-app preview player and the server renderer |
-| AI | Meta Model API (Muse Spark 1.3, SAM 3.1, Muse Voice Transcribe 1.0, Muse Image 1.0); Perception Encoder and MMS-TTS exported to ONNX (`ml/`, Python, offline) |
-| Storage | Cloudflare R2 on the live server (private, encrypted, presigned multipart upload, range reads, zero egress fees); SeaweedFS (S3-compatible) in the judge stack; Amazon S3 also supported |
-| Infra | Terraform (AWS Sydney: one Graviton t4g.large box + EBS), Docker Compose, Caddy (HTTPS); images built on the Mac (arm64) and shipped over SSH |
-| Demo video | Remotion project in `video/`: real screen recordings of the app, voice-over generated locally (Kokoro-82M, British English) |
-| Quality | CI on every push and pull request (GitHub Actions, the same gates as `make gates`). Rust: `cargo fmt`, `clippy -D warnings`, 1,064 unit, use-case and handler tests with in-memory fakes. Web: ESLint, Vitest (1,319 tests), a raw-colour gate that keeps every colour in the token file. Renderer: 112 tests. See [`tests/`](tests/README.md) |
-
-</details>
-
-<details>
-<summary><h2>Repository</h2></summary>
-
-```
-api/        Rust workspace: core (domain, ports, use cases), adapters, contracts, server, testkit
-web/        PWA and the Mac app's web layer (one codebase, two builds)
-desktop/    Tauri 2 Mac app (drive, sync, Keychain, tray)
-render/     Node + Remotion renderer service
-ml/         Perception Encoder and MMS-TTS → ONNX export (offline Python)
-infra/      Terraform stacks (storage, app)
-scripts/    deploy and helpers
-video/      the demo video, as a Remotion project (media not in the repo)
-```
-
-### Source layout and tests
-
-| Package | Source | Tests |
-| --- | --- | --- |
-| API (Rust) | `api/crates/{core,adapters,contracts,server}/src/` | beside the code, and `api/crates/testkit/tests/` |
-| Web app | `web/src/` | `*.test.ts(x)` beside the code |
-| Mac app | `desktop/src-tauri/src/`, UI from `web/src/` | `#[cfg(test)]` beside the code |
-| Renderer | `render/src/` | `*.test.ts` beside the code |
-| Demo video | `video/src/` | – |
-
-`make test` runs every test suite; `tests/run-all.sh` runs the full gates (see
-[`tests/README.md`](tests/README.md)), the same as CI on every push and pull request
-([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
-
-</details>
-
-<a name="run-it"></a>
+<a name="setup-instructions"></a>
 <details open>
-<summary><h2>Run it</h2></summary>
+<summary><h2>Setup Instructions</h2></summary>
 
 Runs the whole app on one machine (Windows, Linux or macOS) with Docker only, and your own Meta AI
 API key (the repo is public, so none ships).
@@ -365,6 +262,109 @@ Upload a few family videos, a photo of a letter or bill, and a voice recording, 
 ```
 
 </details>
+
+</details>
+
+<details>
+<summary><h2>Architecture</h2></summary>
+
+```
+ iPhone / browser (PWA)        nimbytes for Mac (Tauri 2)
+        │                            │  ~/nimbytes  (local NFS drive, smart cache)
+        └──────────── HTTPS ─────────┤
+                                      ▼
+                  Caddy ──► API (Rust · Axum · Tokio)
+                              │  SQLite (WAL) + sqlite-vec · Tantivy
+                              │  job workers: ingest → moments → describe → transcribe
+                              │               → faces → vectors → near-copies → guides
+                              ├──► Meta Model API (Muse Spark, SAM 3.1, Voice Transcribe, Muse Image)
+                              ├──► Perception Encoder + MMS-TTS (ONNX, on the box)
+                              ├──► Renderer (Node · Remotion) for shorts, covers, stills
+                              └──► Object storage: Cloudflare R2, Amazon S3, or a local
+                                   S3-compatible store (presigned multipart + range reads)
+```
+
+### One codebase, two ways to run
+
+| Piece | Live server ("Try it live") | Your machine (`make judge`) |
+| --- | --- | --- |
+| Computer | One AWS EC2 box (Sydney) | Your computer, in Docker |
+| Video storage | Cloudflare R2 | SeaweedFS (S3-compatible, local, free) |
+| Meta key | The author's | Yours |
+| Address | HTTPS on the server's domain | http://localhost:8080 |
+| Code | Same | Same |
+
+One setting (`STORAGE_PROVIDER`: `r2`, `s3` or `local`) picks the store; `docker-compose.judge.yml`
+sets it to `local` and starts these containers on your machine:
+
+```
+┌──────────────────────── your machine (Docker) ────────────────────────┐
+│  Caddy (web server) ── the app at http://localhost:8080               │
+│     ├──► API (Rust) ── jobs, search, Memory Lane, Perception Encoder   │
+│     ├──► SeaweedFS ── your videos, letters and recordings             │
+│     └──► Renderer (Remotion) ── shorts and covers                      │
+└───────────────────────────────┬────────────────────────────────────────┘
+                                ▼  the only outside call
+                       Meta Model API (your key)
+```
+
+Media links are signed for `localhost:8080`, and Caddy passes the bucket path through to SeaweedFS,
+so the browser and the renderer reach media on the app's own origin. Meta calls carry media as data
+URLs, so nothing has to be reachable from the internet.
+
+- **Hexagonal core:** domain types, ports and use cases in `api/crates/core` depend on nothing that
+  does IO. Adapters (`api/crates/adapters`) are the only code that calls HTTP, R2, ffmpeg, SQLite,
+  Tantivy or ONNX. One composition root wires them (`api/crates/server`).
+- **Typed errors:** one `AppError { code, message }` with `UPPER_SNAKE` codes.
+- **Prompts live in files:** `api/prompts/*.md`, each with a JSON schema that every Muse Spark
+  answer is validated against.
+
+</details>
+
+<details>
+<summary><h2>Technology</h2></summary>
+
+| Layer | Technology |
+| --- | --- |
+| Web app | Installable PWA: React 19.3, Vite 8.3, TypeScript 6.0, React Router 8.5, vanilla CSS design tokens (no CSS framework), Vitest 5 |
+| Mac app | Tauri 2.12 (Rust + the same web app), local NFS drive (`nfsserve`), macOS Keychain session, tray, autostart, notifications; signed with a Developer ID |
+| API | Rust: Axum 0.8, Tokio 1.54, sqlx 0.9 on SQLite (WAL), sqlite-vec 0.1, Tantivy 0.27, `ort` 2.0 (ONNX Runtime), reqwest 0.13, aws-sdk-s3 (R2), ffmpeg/ffprobe, poppler (PDF pages) |
+| Rendering | Node + Remotion 4.0: one composition shared by the in-app preview player and the server renderer |
+| AI | Meta Model API (Muse Spark 1.3, SAM 3.1, Muse Voice Transcribe 1.0, Muse Image 1.0); Perception Encoder and MMS-TTS exported to ONNX (`ml/`, Python, offline) |
+| Storage | Cloudflare R2 on the live server (private, encrypted, presigned multipart upload, range reads, zero egress fees); SeaweedFS (S3-compatible) in the judge stack; Amazon S3 also supported |
+| Infra | Terraform (AWS Sydney: one Graviton t4g.large box + EBS), Docker Compose, Caddy (HTTPS); images built on the Mac (arm64) and shipped over SSH |
+| Demo video | Remotion project in `video/`: real screen recordings of the app, voice-over generated locally (Kokoro-82M, British English) |
+| Quality | CI on every push and pull request (GitHub Actions, the same gates as `make gates`). Rust: `cargo fmt`, `clippy -D warnings`, 1,064 unit, use-case and handler tests with in-memory fakes. Web: ESLint, Vitest (1,319 tests), a raw-colour gate that keeps every colour in the token file. Renderer: 112 tests. See [`tests/`](tests/README.md) |
+
+</details>
+
+<details>
+<summary><h2>Repository</h2></summary>
+
+```
+api/        Rust workspace: core (domain, ports, use cases), adapters, contracts, server, testkit
+web/        PWA and the Mac app's web layer (one codebase, two builds)
+desktop/    Tauri 2 Mac app (drive, sync, Keychain, tray)
+render/     Node + Remotion renderer service
+ml/         Perception Encoder and MMS-TTS → ONNX export (offline Python)
+infra/      Terraform stacks (storage, app)
+scripts/    deploy and helpers
+video/      the demo video, as a Remotion project (media not in the repo)
+```
+
+### Source layout and tests
+
+| Package | Source | Tests |
+| --- | --- | --- |
+| API (Rust) | `api/crates/{core,adapters,contracts,server}/src/` | beside the code, and `api/crates/testkit/tests/` |
+| Web app | `web/src/` | `*.test.ts(x)` beside the code |
+| Mac app | `desktop/src-tauri/src/`, UI from `web/src/` | `#[cfg(test)]` beside the code |
+| Renderer | `render/src/` | `*.test.ts` beside the code |
+| Demo video | `video/src/` | – |
+
+`make test` runs every test suite; `tests/run-all.sh` runs the full gates (see
+[`tests/README.md`](tests/README.md)), the same as CI on every push and pull request
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 </details>
 
