@@ -24,7 +24,8 @@ The repo runs on its own without this server.
 
 ---
 
-## The problem
+<details>
+<summary><h2>The problem</h2></summary>
 
 Eric is 61 and lives on his own. His eyesight is fading, and names don't come as quickly as they
 used to. His family films everything: birthdays, recipes, voicemails. Thousands of videos he can't
@@ -36,9 +37,10 @@ first (TrendForce NAND contract prices, Jan–Sep 2026), so footage gets deleted
 **nimbytes makes a family's own footage findable, readable and followable again.** It is an
 everyday helper. It does not diagnose, treat or replace care.
 
----
+</details>
 
-## What it does
+<details>
+<summary><h2>What it does</h2></summary>
 
 | Feature | What you see | How it works |
 | --- | --- | --- |
@@ -112,9 +114,10 @@ everyday helper. It does not diagnose, treat or replace care.
 - Faces of people and pets, named once by you; opt-in matching across clips; bystanders can be
   hidden. Segments group any mix of files.
 
----
+</details>
 
-## Agents
+<details>
+<summary><h2>Agents</h2></summary>
 
 Every feature that takes more than one model call runs as an agent loop with a check step, and the
 UI shows each stage as it runs.
@@ -127,9 +130,10 @@ UI shows each stage as it runs.
 | **iGuide** | Muse Spark finds the steps in a task video | Picks a frame per step; SAM 3.1 traces the thing to touch | Each step is replayable against its moment of the clip |
 | **Shorts** | Muse Spark plans the edit from your moments | The Remotion renderer draws a draft | Muse Spark watches the draft, critiques it and revises |
 
----
+</details>
 
-## Meta models: six, every one doing real work
+<details>
+<summary><h2>Meta models: six, every one doing real work</h2></summary>
 
 | Role | Model | Used for | Where it runs |
 | --- | --- | --- | --- |
@@ -143,9 +147,10 @@ UI shows each stage as it runs.
 Every Meta call goes through one `MetaClient` that caches answers and logs the cost of each call.
 Calls are made with storage off, so footage is never kept or used for training.
 
----
+</details>
 
-## Architecture
+<details>
+<summary><h2>Architecture</h2></summary>
 
 ```
  iPhone / browser (PWA)        nimbytes for Mac (Tauri 2)
@@ -198,9 +203,10 @@ URLs, so nothing has to be reachable from the internet.
 - **Prompts live in files:** `api/prompts/*.md`, each with a JSON schema that every Muse Spark
   answer is validated against.
 
----
+</details>
 
-## Technology
+<details>
+<summary><h2>Technology</h2></summary>
 
 | Layer | Technology |
 | --- | --- |
@@ -214,9 +220,10 @@ URLs, so nothing has to be reachable from the internet.
 | Demo video | Remotion project in `video/`: real screen recordings of the app, voice-over generated locally (Kokoro-82M, British English) |
 | Quality | CI on every push and pull request (GitHub Actions, the same gates as `make gates`). Rust: `cargo fmt`, `clippy -D warnings`, 1,064 unit, use-case and handler tests with in-memory fakes. Web: ESLint, Vitest (1,319 tests), a raw-colour gate that keeps every colour in the token file. Renderer: 112 tests. See [`tests/`](tests/README.md) |
 
----
+</details>
 
-## Repository
+<details>
+<summary><h2>Repository</h2></summary>
 
 ```
 api/        Rust workspace: core (domain, ports, use cases), adapters, contracts, server, testkit
@@ -243,16 +250,14 @@ video/      the demo video, as a Remotion project (media not in the repo)
 [`tests/README.md`](tests/README.md)), the same as CI on every push and pull request
 ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
 
----
+</details>
 
-## Run it
+<a name="run-it"></a>
+<details open>
+<summary><h2>Run it</h2></summary>
 
-The judge path runs the whole app on one machine (Windows, Linux or macOS) with Docker. Media is
-kept in a local S3-compatible store (SeaweedFS), so no cloud account or bucket is needed. The only
-outside service is the Meta Model API, with **your own key** (the repo is public, so none ships).
-
-**You need:** Docker Desktop (or Docker Engine with Compose v2.24+), about 6 GB free disk and a Meta
-AI API key. Nothing else: no Node, Python or Rust on your machine.
+Runs the whole app on one machine (Windows, Linux or macOS) with Docker only, and your own Meta AI
+API key (the repo is public, so none ships).
 
 ```bash
 git clone https://github.com/denmarkamanodaya/meta-hackathon-nimbytes && cd meta-hackathon-nimbytes
@@ -260,12 +265,18 @@ cp .env.example .env    # fill in the 3 REQUIRED values (see below)
 make judge              # downloads the search model once, builds the web app in Docker, starts it all
 ```
 
-The first run takes about **5 to 10 minutes** (cold start): it downloads the search model and
-builds the api and web images. Later runs reuse both and start much faster.
+| `.env` value | What to put |
+| --- | --- |
+| `MODEL_API_KEY` | Your Meta AI API key |
+| `DEMO_PASSCODE` | Any passcode you choose; you type it on the sign-in page |
+| `SESSION_SECRET` | 32+ random bytes: `openssl rand -hex 32` |
 
-Then open **http://localhost:8080** (Chrome, Edge or Firefox) and sign in with your `DEMO_PASSCODE`.
-The passcode is whatever you put in `.env`, typed exactly; there is no username.
-`make judge-down` stops it; your library stays in Docker volumes and `./data`.
+The first run takes about **5 to 10 minutes** (cold start). Then open **http://localhost:8080**
+(Chrome, Edge or Firefox) and sign in with your `DEMO_PASSCODE`, typed exactly; there is no
+username. `make judge-down` stops it; your library stays in Docker volumes and `./data`.
+
+<details>
+<summary><b>What you will see</b></summary>
 
 ![The nimbytes sign-in page at localhost:8080, asking for the demo passcode](docs/readme/login.png)
 
@@ -274,11 +285,18 @@ A fresh clone running locally: one photo uploaded, then found by searching "glas
 
 ![A fresh local run: a search finds the uploaded photo and shows what Meta models saw in it](docs/readme/local-run.png)
 
-| `.env` value | What to put |
-| --- | --- |
-| `MODEL_API_KEY` | Your Meta AI API key |
-| `DEMO_PASSCODE` | Any passcode you choose; you type it on the sign-in page |
-| `SESSION_SECRET` | 32+ random bytes: `openssl rand -hex 32` |
+</details>
+
+<details>
+<summary><b>Requirements and the search model</b></summary>
+
+**You need:** Docker Desktop (or Docker Engine with Compose v2.24+), about 6 GB free disk and a Meta
+AI API key. Nothing else: no Node, Python or Rust on your machine. Media is kept in a local
+S3-compatible store (SeaweedFS), so no cloud account or bucket is needed. The only outside service
+is the Meta Model API.
+
+The first run downloads the search model and builds the api and web images. Later runs reuse both
+and start much faster.
 
 Port 8080 taken? Set `NIMBYTES_PORT=8090` in `.env` and open that port instead.
 
@@ -288,8 +306,10 @@ The search model is Meta's **Perception Encoder**, already converted to ONNX and
 instead, run `make models` (needs [uv](https://docs.astral.sh/uv/); about 1.7 GB download); it also
 exports the optional MMS-TTS backup voice.
 
+</details>
+
 <details>
-<summary>Without <code>make</code> (Windows PowerShell)</summary>
+<summary><b>Without <code>make</code> (Windows PowerShell)</b></summary>
 
 ```powershell
 docker run --rm -v "${PWD}:/app" -v nimbytes-judge-render-modules:/app/render/node_modules `
@@ -300,12 +320,19 @@ docker compose -f docker-compose.yml -f docker-compose.judge.yml up -d --build
 
 First download `perception-encoder.tar.gz` from the models-v1 release and unpack it so the files sit
 in `api/models/pe/`.
+
 </details>
 
-**One minute, no keys:** `cd web && npm ci && npm run dev:mock` runs the app on an in-browser mock
+<details>
+<summary><b>Try it in one minute, no keys (mock API)</b></summary>
+
+`cd web && npm ci && npm run dev:mock` runs the app on an in-browser mock
 API (Node 22) at http://localhost:5175, so you can click through every screen without the stack.
 
-### Reproduce the demo
+</details>
+
+<details>
+<summary><b>Reproduce the demo</b></summary>
 
 Upload a few family videos, a photo of a letter or bill, and a voice recording, then:
 
@@ -316,7 +343,10 @@ Upload a few family videos, a photo of a letter or bill, and a voice recording, 
 - **iListen:** open the recording; pick the summary language.
 - **iGuide:** attach a cooking video and ask "make a guide for this".
 
-### Other ways to run it
+</details>
+
+<details>
+<summary><b>Other ways to run it</b></summary>
 
 - **Development:** `cd web && npm run dev` (port 5173, proxies `/api` to the stack); `make test`
   runs every test suite, `make gates` runs what CI runs.
@@ -334,9 +364,12 @@ Upload a few family videos, a photo of a letter or bill, and a voice recording, 
   Exports/     drop a finished edit here; it uploads and appears in your library
 ```
 
----
+</details>
 
-## Built during the event
+</details>
+
+<details>
+<summary><h2>Built during the event</h2></summary>
 
 Everything here was written during the hackathon, starting from an empty repository on
 **27 October 2026** (the first commit). About 340 small, dated commits on `main` show the build.
@@ -352,9 +385,10 @@ Everything here was written during the hackathon, starting from an empty reposit
 | v2.4.0 – v2.5.0 | 30 Oct | iListen (any language, even mixed, summarised in yours, with a checked translation score), photos in search and the Gallery, Muse Image covers for recordings |
 | **v3.0.0 (stable)** | 30 Oct | Recordings, documents and photos are files in the drive with Where and Segment like videos; Projects renamed Segments; an Accessibility group (iGuide, iRead, iListen) |
 
----
+</details>
 
-## Privacy
+<details>
+<summary><h2>Privacy</h2></summary>
 
 - Media sits in a private, encrypted bucket and is reached only through short-lived signed links
   after an ownership check.
@@ -362,9 +396,10 @@ Everything here was written during the hackathon, starting from an empty reposit
   suggests; turning it off deletes the face data. Bystanders can be hidden with one tap.
 - Every Meta call is made with storage off, so footage is never kept or used for training.
 
----
+</details>
 
-## Third-party
+<details>
+<summary><h2>Third-party</h2></summary>
 
 | Item | Licence | Use |
 | --- | --- | --- |
@@ -382,10 +417,13 @@ Everything here was written during the hackathon, starting from an empty reposit
 Open-source crates and npm packages are listed in `api/Cargo.lock`, `web/package-lock.json`,
 `render/package-lock.json` and `desktop/src-tauri/Cargo.lock`.
 
----
+</details>
 
-## Licence
+<details>
+<summary><h2>Licence</h2></summary>
 
 nimbytes' own code and docs are released under the [MIT Licence](LICENSE). Meta models, model
 weights, sample footage and other third-party pieces keep their own licences (see Third-party).
 Build notes, plans and the prompts used during the event are in [`docs/`](docs/README.md).
+
+</details>
