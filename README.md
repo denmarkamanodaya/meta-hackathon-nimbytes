@@ -26,6 +26,8 @@ eyesight or memory is fading.
 > Built for the **Meta Global AI Developer Hackathon** (26 October – 4 November 2026).
 > Theme: **Build for Your World** · Track: **Indie Developer** (solo).
 
+[![Watch the nimbytes demo video (2:16) on YouTube](docs/readme/demo-video.jpg)](https://youtu.be/U1ZFNs1BktY)
+
 **▶ Demo video (2:16):** [youtu.be/U1ZFNs1BktY](https://youtu.be/U1ZFNs1BktY): Eric's story, told with real
 screen recordings: the zero-bytes filesystem, iRecall search, Memory Lane, iRead, iListen and iGuide.
 
@@ -106,6 +108,8 @@ everyday helper. It does not diagnose, treat or replace care.
 - Upload straight from the gallery (files or folders), or drop a finished edit into `Exports/`
   and it appears in the library.
 
+![Finder's Get Info on a 3.4 GB birthday video in ~/nimbytes/Library: 3,403,757,823 bytes, Zero bytes on disk](docs/readme/zero-bytes.png)
+
 **Search, in your own words**
 - One search box (iRecall) for everything; type or hold to talk.
 - Search by **what you saw** ("show me all my footage of the wooden temple"), **what was said**
@@ -115,11 +119,15 @@ everyday helper. It does not diagnose, treat or replace care.
   Spark" shows when the AI reranked. When a request is unclear, Muse Spark asks "Did you mean…"
   (search for it, or make a short about it).
 
+![iRecall search: typing "find the guy wearing sunglasses" while nimbytes searches the clips](docs/readme/search.png)
+
 **Duplicates and near-copies**
 - Exact copies are found by content; near-copies (trimmed, re-encoded, exported again) by comparing
   moments, with a similarity score ("99% the same as Live concert performance… this one looks
   trimmed"), the space each copy uses, and Remove this copy / Keep both. Copies skip all paid AI
   steps.
+
+![Looks like a copy: 99% the same as Live concert performance, this one looks trimmed, with Remove this copy and Keep both](docs/readme/near-copy.png)
 
 **iGuide: a step-by-step guide from any video**
 - Attach a clip, ask for a guide in plain words ("how to properly season chicken breast"); Muse
@@ -128,11 +136,15 @@ everyday helper. It does not diagnose, treat or replace care.
 - The finished guide lists numbered steps; each has its still with the SAM 3.1 outline, replays its
   moment of the clip, and is read aloud. Film any task once: a recipe, the laundry, the TV remote.
 
+![iGuide: seven numbered steps from a cooking video, the chicken traced by SAM 3.1, with Play and Edit text](docs/readme/iguide.jpg)
+
 **iRead: send any document, hear what matters**
 - Send a photo or PDF of a bill or letter; Muse Spark reads the page and answers your question
   ("How much do I owe, and when is it due?" → "Your amount due is $79.87. It is due on 27 April
   2022."), read aloud in the device's voice. Ask follow-up questions, or have the whole letter read.
 - Built for anyone with fading or blurry vision; answers come only from the page.
+
+![iRead: an electricity bill summarised as amount due $79.87 on 27 April 2022, with Read it to me](docs/readme/iread.png)
 
 **iListen: any recording, any language, your summary**
 - Drop in a recording or a video in any language, even mixed. iListen shows who spoke and in which
@@ -142,11 +154,15 @@ everyday helper. It does not diagnose, treat or replace care.
   re-done if it fails (pass mark 90%), and the result is shown as "Checked 100%" or "Needs a human
   check". Muse Image paints a cover for each recording.
 
+![iListen: a 13-second Japanese voicemail summarised in English, Checked 100%](docs/readme/ilisten.png)
+
 **Shorts, faces and more**
 - Agentic shorts: Muse Spark plans the edit, the renderer draws it, Muse Spark watches the draft,
   critiques it and revises; open the cut in Final Cut Pro or DaVinci Resolve (FCPXML).
 - Faces of people and pets, named once by you; opt-in matching across clips; bystanders can be
   hidden. Segments group any mix of files.
+
+![Faces: four people and pets named once by the family, with 41 bystanders hidden](docs/readme/faces.png)
 
 </details>
 
@@ -191,6 +207,10 @@ Calls are made with storage off, so footage is never kept or used for training.
 
 Measured during the event on real footage. These are one-off measurements, not a continuous
 benchmark suite. Times are wall time from our side, so Meta calls include the network.
+
+The Meta call times were logged on 28 October, before the fixes that came out of that day's
+[latency investigation](docs/investigations/2026-10-28-latency.md) (SAM requests now sent with
+`store:false`), so calls today may be faster.
 
 **On our server (no network)**
 
@@ -423,7 +443,7 @@ URLs, so nothing has to be reachable from the internet.
 | Storage | Cloudflare R2 on the live server (private, encrypted, presigned multipart upload, range reads, zero egress fees); SeaweedFS (S3-compatible) in the judge stack; Amazon S3 also supported |
 | Infra | Terraform (AWS Sydney: one Graviton t4g.large box + EBS), Docker Compose, Caddy (HTTPS); images built on the Mac (arm64) and shipped over SSH |
 | Demo video | Remotion project in `video/`: real screen recordings of the app, voice-over generated locally (Kokoro-82M, British English) |
-| Quality | CI on every push and pull request (GitHub Actions, the same gates as `make gates`). Rust: `cargo fmt`, `clippy -D warnings`, 1,064 unit, use-case and handler tests with in-memory fakes. Web: ESLint, Vitest (1,319 tests), a raw-colour gate that keeps every colour in the token file. Renderer: 112 tests. See [`tests/`](tests/README.md) |
+| Quality | CI on every push and pull request (GitHub Actions, the same gates as `make gates`). Rust: `cargo fmt`, `clippy -D warnings`, 1,105 unit, use-case and handler tests with in-memory fakes. Web: ESLint, Vitest (1,361 tests), a raw-colour gate that keeps every colour in the token file. Renderer: 112 tests. See [`tests/`](tests/README.md) |
 
 </details>
 
@@ -463,7 +483,7 @@ video/      the demo video, as a Remotion project (media not in the repo)
 <summary><h2>Built during the event</h2></summary>
 
 Everything here was written during the hackathon, starting from an empty repository on
-**27 October 2026** (the first commit). About 340 small, dated commits on `main` show the build.
+**27 October 2026** (the first commit). About 450 small, dated commits on `main`, made by 4 November, show the build.
 
 | Release | Date | What landed |
 | --- | --- | --- |
