@@ -24,6 +24,26 @@ The repo runs on its own without this server.
 
 ---
 
+## Contents
+
+- [The problem](#the-problem)
+- [What it does](#what-it-does)
+- [Agents](#agents)
+- [Meta models](#meta-models)
+- [Benchmarks](#benchmarks)
+- [Setup Instructions](#setup-instructions)
+- [Architecture](#architecture)
+- [Technology](#technology)
+- [Repository](#repository)
+- [Built during the event](#built-during-the-event)
+- [For future implementation](#for-future-implementation)
+- [Privacy](#privacy)
+- [Third-party](#third-party)
+- [Licence](#licence)
+
+---
+
+<a name="the-problem"></a>
 <details>
 <summary><h2>The problem</h2></summary>
 
@@ -39,6 +59,7 @@ everyday helper. It does not diagnose, treat or replace care.
 
 </details>
 
+<a name="what-it-does"></a>
 <details>
 <summary><h2>What it does</h2></summary>
 
@@ -116,6 +137,7 @@ everyday helper. It does not diagnose, treat or replace care.
 
 </details>
 
+<a name="agents"></a>
 <details>
 <summary><h2>Agents</h2></summary>
 
@@ -132,6 +154,7 @@ UI shows each stage as it runs.
 
 </details>
 
+<a name="meta-models"></a>
 <details>
 <summary><h2>Meta models: six, every one doing real work</h2></summary>
 
@@ -146,6 +169,57 @@ UI shows each stage as it runs.
 
 Every Meta call goes through one `MetaClient` that caches answers and logs the cost of each call.
 Calls are made with storage off, so footage is never kept or used for training.
+
+</details>
+
+<a name="benchmarks"></a>
+<details>
+<summary><h2>Benchmarks</h2></summary>
+
+Measured during the event on real footage. These are one-off measurements, not a continuous
+benchmark suite. Times are wall time from our side, so Meta calls include the network.
+
+**On our server (no network)**
+
+| Step | Result | Measured on |
+| --- | --- | --- |
+| Perception Encoder, image to vector (Rust, `ort`) | 72 ms | M4 Pro, 27 Oct |
+| Perception Encoder, text to vector | 38 ms | M4 Pro, 27 Oct |
+| Vector search (sqlite-vec, 1024-d, 5,000 moments) | 5.9 ms; 2.6 ms within one user's library | M4 Pro, 27 Oct |
+| Proxy encode (ffmpeg, 3 s HEVC clip) | 131 ms | M4 Pro, 27 Oct |
+
+**Search, end to end** (query rewrite + keyword + vector + rerank)
+
+| Case | Time | Cost |
+| --- | --- | --- |
+| New search | ~3.6 s | $0.002 to $0.003 |
+| Repeated search (cached) | ~0.06 s | $0 |
+
+**Meta model calls** (852 logged calls, 28 Oct; source: the `model_calls` ledger, raw data in
+[`docs/investigations/2026-10-28-latency/`](docs/investigations/2026-10-28-latency.md))
+
+| Model | Job | Average per call |
+| --- | --- | --- |
+| Muse Spark 1.3 | Describe one video moment | 9.1 s |
+| Muse Spark 1.3 | Clip title | 2.6 s |
+| Muse Spark 1.3 | Confirm a face match | 1.6 s |
+| SAM 3.1 | One image | 5.7 s |
+| SAM 3.1 | Faces across a clip | 37.7 s |
+| Muse Voice Transcribe 1.0 | One clip, with speakers | 30.9 s |
+
+The server itself was idle while these ran (API container under 1 % CPU), so analysis time is
+the model calls, not our machine.
+
+**Streaming from storage** (Cloudflare R2, presigned range reads, 27 Oct; script
+[`scripts/r2-throughput.sh`](scripts/r2-throughput.sh))
+
+| From | First byte | Speed |
+| --- | --- | --- |
+| The server (EC2, Sydney) | – | 80 MB/s one stream, 83 MB/s with 4 ranges |
+| A home Mac | 275 ms | 6.2 MB/s (limited by the home connection) |
+
+**Cost:** ingest measured $0.09 per minute of footage on a 21 s clip; longer clips spread SAM's
+per-request minimum and come to about $0.05 to $0.06 per minute. Copies skip all paid AI steps.
 
 </details>
 
@@ -265,6 +339,7 @@ Upload a few family videos, a photo of a letter or bill, and a voice recording, 
 
 </details>
 
+<a name="architecture"></a>
 <details>
 <summary><h2>Architecture</h2></summary>
 
@@ -321,6 +396,7 @@ URLs, so nothing has to be reachable from the internet.
 
 </details>
 
+<a name="technology"></a>
 <details>
 <summary><h2>Technology</h2></summary>
 
@@ -338,6 +414,7 @@ URLs, so nothing has to be reachable from the internet.
 
 </details>
 
+<a name="repository"></a>
 <details>
 <summary><h2>Repository</h2></summary>
 
@@ -368,6 +445,7 @@ video/      the demo video, as a Remotion project (media not in the repo)
 
 </details>
 
+<a name="built-during-the-event"></a>
 <details>
 <summary><h2>Built during the event</h2></summary>
 
@@ -387,6 +465,7 @@ Everything here was written during the hackathon, starting from an empty reposit
 
 </details>
 
+<a name="for-future-implementation"></a>
 <details>
 <summary><h2>For future implementation</h2></summary>
 
@@ -400,6 +479,7 @@ the first thing we will plug in when it does.
 
 </details>
 
+<a name="privacy"></a>
 <details>
 <summary><h2>Privacy</h2></summary>
 
@@ -411,6 +491,7 @@ the first thing we will plug in when it does.
 
 </details>
 
+<a name="third-party"></a>
 <details>
 <summary><h2>Third-party</h2></summary>
 
@@ -432,6 +513,7 @@ Open-source crates and npm packages are listed in `api/Cargo.lock`, `web/package
 
 </details>
 
+<a name="licence"></a>
 <details>
 <summary><h2>Licence</h2></summary>
 
