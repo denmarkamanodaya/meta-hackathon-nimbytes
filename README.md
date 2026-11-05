@@ -5,6 +5,19 @@
 [![ci](https://github.com/denmarkamanodaya/meta-hackathon-nimbytes/actions/workflows/ci.yml/badge.svg)](https://github.com/denmarkamanodaya/meta-hackathon-nimbytes/actions/workflows/ci.yml)
 [![RepoGrade](https://www.repo-grade.com/api/badge/denmarkamanodaya/meta-hackathon-nimbytes)](https://www.repo-grade.com/report/denmarkamanodaya/meta-hackathon-nimbytes)
 
+[![Rust](https://img.shields.io/badge/Rust-1.99%20%C2%B7%20edition%202024-CE422B?logo=rust&logoColor=white)](#technology)
+[![Axum](https://img.shields.io/badge/Axum-0.8-555555)](#architecture)
+[![React](https://img.shields.io/badge/React-19.3-087EA4?logo=react&logoColor=white)](#technology)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](#technology)
+[![Tauri](https://img.shields.io/badge/Tauri-2.12%20%28macOS%29-24C8DB?logo=tauri&logoColor=white)](https://github.com/denmarkamanodaya/meta-hackathon-nimbytes/releases)
+[![SQLite](https://img.shields.io/badge/SQLite-WAL%20%2B%20sqlite--vec-003B57?logo=sqlite&logoColor=white)](#architecture)
+[![Architecture](https://img.shields.io/badge/architecture-hexagonal-6E40C9)](#architecture)
+[![Meta models](https://img.shields.io/badge/Meta%20models-6-0866FF?logo=meta&logoColor=white)](#meta-models)
+[![Tests](https://img.shields.io/badge/tests-2%2C578%20checks-2EA043)](tests/README.md)
+[![Docker](https://img.shields.io/badge/Docker-make%20judge-2496ED?logo=docker&logoColor=white)](#setup-instructions)
+[![Licence](https://img.shields.io/badge/licence-MIT-yellow)](LICENSE)
+[![Born at Meta hackathon](https://img.shields.io/badge/born%20at-Meta%20hackathon%202026-0866FF?logo=meta&logoColor=white)](#built-during-the-event)
+
 **An AI-powered filesystem, built on Meta AI.** nimbytes keeps a family's whole video library in
 the cloud at zero bytes on your device. It still plays like it's local, and Meta models understand
 every clip, so you can search footage like text, and turn it into everyday help for people whose
